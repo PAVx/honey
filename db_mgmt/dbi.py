@@ -10,7 +10,7 @@ from random import randint
 import ConfigParser
 
 # Get config file
-#print("Configuring interface program... ")
+print("Configuring interface program... ")
 config_file_name = "dbi_conf"
 config = ConfigParser.ConfigParser()
 config.readfp(open(r'dbi_conf'))
@@ -19,7 +19,8 @@ db_host = config.get(_db_info, 'host')
 db_user = config.get(_db_info, 'user')
 db_pass = creds.db_pass
 db_inst = config.get(_db_info, 'dbin')
-#print("Configuration complete!\n")
+num_tables = config.get(_inst_conf, 'num_instruments')
+print("Configuration complete!\n")
 
 # Initialize the database object and cursor
 db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_inst)

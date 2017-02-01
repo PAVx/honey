@@ -15,6 +15,7 @@ config_file_name = "dbi_conf"
 config = ConfigParser.ConfigParser()
 config.readfp(open(r'dbi_conf'))
 _db_info = 'DB_MASTER_INFO'
+_inst_conf = 'GENERAL_INST_CONF'
 db_host = config.get(_db_info, 'host')
 db_user = config.get(_db_info, 'user')
 db_pass = creds.db_pass

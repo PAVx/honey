@@ -6,6 +6,7 @@ import dbi
 from random import randint
 import ConfigParser
 import time
+import RPi.GPIO as GPIO
 
 # Configuration
 config_file_name = "dbi_conf"
@@ -52,24 +53,25 @@ m = 0
 
 
 while(1):
-    assemble_ch_data(0, m)
-    
-    print(channels[0].meas_val[m])
+    if 1:
+        assemble_ch_data(0, m)
+        
+        print(channels[0].meas_val[m])
 
-    # Check for nth measurement and store to database.
-    m = m + 1
-    if m >= n:
-        m = 0
-        # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
-        dbi.add_entry("Instrument0_data",\
-                      channels[0].x,\
-                      channels[0].y,\
-                      channels[0].z,\
-                      n_average(channels[0].meas_val),\
-                      n_average(channels[0].pts))        
+        # Check for nth measurement and store to database.
+        m = m + 1
+        if m >= n:
+            m = 0
+            # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
+            dbi.add_entry("Instrument0_data",\
+                          channels[0].x,\
+                          channels[0].y,\
+                          channels[0].z,\
+                          n_average(channels[0].meas_val),\
+                          n_average(channels[0].pts))        
 
-    # Wait for tick
-    time.sleep(wait_time)
+        # Wait for tick
+        time.sleep(wait_time)
 
 dbi.fetch_all_entries("Instrument0_data")
 dbi._exit()

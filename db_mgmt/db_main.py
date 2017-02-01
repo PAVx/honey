@@ -19,6 +19,11 @@ num_instr = int(config.get(_core_variables, 'n_channels'))
 wait_time = 1/(float(config.get(_core_variables, 'sample_rate')))
 print "Sample size set to ", n, " every ", wait_time, " seconds." 
 
+# Some clock stuff
+CLOCK_IN = 21
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(CLOCK_IN, GPIO.IN)
+
 
 # Instrument Channels
 class channel:
@@ -47,13 +52,17 @@ def n_average(lst):
     return (total/len(lst))
         
         
-
+# Incrementer for the average counter
 m = 0
 
 
 
 while(1):
-    if 1:
+    try: 
+        # Wait for the rising edge of a "clock tick"
+        # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
+
+        # Proceed assembling data in all channels
         assemble_ch_data(0, m)
         
         print(channels[0].meas_val[m])
@@ -73,5 +82,12 @@ while(1):
         # Wait for tick
         time.sleep(wait_time)
 
-dbi.fetch_all_entries("Instrument0_data")
-dbi._exit()
+    except KeyboardInterrupt:
+        GPIO.cleanup()
+        dbi.fetch_all_entries("Instrument0_data")
+        dbi._exit()
+
+##GPIO.cleanup()
+##dbi.fetch_all_entries("Instrument0_data")
+##dbi._exit()
+

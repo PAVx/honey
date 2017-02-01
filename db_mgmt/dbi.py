@@ -3,6 +3,7 @@
 # simple script testing out our wrapper program
 
 import MySQLdb
+import creds
 import time
 import datetime
 from random import randint
@@ -16,7 +17,7 @@ config.readfp(open(r'dbi_conf'))
 _db_info = 'DB_MASTER_INFO'
 db_host = config.get(_db_info, 'host')
 db_user = config.get(_db_info, 'user')
-db_pass = config.get(_db_info, 'pass')
+db_pass = creds.db_pass
 db_inst = config.get(_db_info, 'dbin')
 #print("Configuration complete!\n")
 

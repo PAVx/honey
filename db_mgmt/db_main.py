@@ -45,6 +45,10 @@ def assemble_ch_data(ch, i):
     channels[ch].y = randint(0,100)
     channels[ch].z = randint(0,100)
 
+def assemble_channels(i):
+    for k in range(num_instr):
+        assemble_ch_data(k, i)
+
 def n_average(lst):
     total = 0
     for val in lst:
@@ -63,28 +67,34 @@ while(1):
         # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
 
         # Proceed assembling data in all channels
-        assemble_ch_data(0, m)
+        assemble_channels(m)
         
-        print(channels[0].meas_val[m])
+        print "."
 
         # Check for nth measurement and store to database.
         m = m + 1
         if m >= n:
             m = 0
-            # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
-            dbi.add_entry("Instrument0_data",\
-                          channels[0].x,\
-                          channels[0].y,\
-                          channels[0].z,\
-                          n_average(channels[0].meas_val),\
-                          n_average(channels[0].pts))        
+            for j in range(num_instr):
+                # Create table name
+                table_name = ("Instrument" + str(j) + "_data")
+                # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
+                dbi.add_entry(table_name,\
+                              channels[j].x,\
+                              channels[j].y,\
+                              channels[j].z,\
+                              n_average(channels[j].meas_val),\
+                              n_average(channels[j].pts))        
 
         # Wait for tick
         time.sleep(wait_time)
 
     except KeyboardInterrupt:
         GPIO.cleanup()
-        dbi.fetch_all_entries("Instrument0_data")
+        for l in range(num_instr):
+            table_name = ("Instrument" + str(j) + "_data")
+            print table_name
+            dbi.fetch_all_entries(table_name)
         dbi._exit()
 
 ##GPIO.cleanup()

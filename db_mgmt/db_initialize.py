@@ -12,12 +12,12 @@ config_file_name = "dbi_conf"
 config = ConfigParser.ConfigParser()
 config.readfp(open(r'dbi_conf'))
 _db_info = 'DB_MASTER_INFO'
-_inst_conf = 'GENERAL_INST_CONF'
+_core_variables = 'CORE_VARIABLES'
 db_host = config.get(_db_info, 'host')
 db_user = config.get(_db_info, 'user')
 db_pass = creds.db_pass
 db_inst = config.get(_db_info, 'dbin')
-num_tables = int(config.get(_inst_conf, 'num_instruments'))
+num_tables = int(config.get(_core_variables, 'n_channels'))
 print ("Number of instruments to be configured: ", num_tables)
 print("Configuration complete!\n")
 

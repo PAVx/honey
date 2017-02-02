@@ -92,10 +92,11 @@ while(1):
     except KeyboardInterrupt:
         GPIO.cleanup()
         for l in range(num_instr):
-            table_name = ("Instrument" + str(j) + "_data")
+            table_name = ("\nInstrument" + str(l) + "_data")
             print table_name
             dbi.fetch_all_entries(table_name)
         dbi._exit()
+        break
 
 ##GPIO.cleanup()
 ##dbi.fetch_all_entries("Instrument0_data")

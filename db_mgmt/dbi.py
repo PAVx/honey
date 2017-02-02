@@ -53,7 +53,7 @@ def fetch_last_entry(table):
 
 def fetch_all_entries(table):
         print ("List all entries:\n    ")
-        fetch_cmd = ("SELECT * FROM `Instrument0_data` ORDER BY time")
+        fetch_cmd = ("SELECT * FROM `" + table + "` ORDER BY time")
         cur.execute(fetch_cmd)
         _print(cur)
 

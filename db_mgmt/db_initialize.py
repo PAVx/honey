@@ -18,7 +18,7 @@ db_user = config.get(_db_info, 'user')
 db_pass = creds.db_pass
 db_inst = config.get(_db_info, 'dbin')
 num_tables = int(config.get(_core_variables, 'n_channels'))
-print ("Number of instruments to be configured: ", num_tables)
+print ("Number of channels to be configured: ", num_tables)
 print("Configuration complete!\n")
 
 # Connect to host, set cursor, create db if doesn't exist
@@ -35,7 +35,7 @@ def reset_db():
 
 def add_tables(n):
     for i in range(n):
-        table_name = ("Instrument" + str(i) + "_data")
+        table_name = ("channel" + str(i) + "_data")
         cmd = ("CREATE TABLE IF NOT EXISTS " + table_name + "(time timestamp, loc_x int, loc_y int, loc_z int, meas_val int, pts int)")
         cur.execute(cmd)
         print("Added ", table_name)

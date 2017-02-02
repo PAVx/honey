@@ -77,7 +77,7 @@ while(1):
             m = 0
             for j in range(num_instr):
                 # Create table name
-                table_name = ("Instrument" + str(j) + "_data")
+                table_name = ("channel" + str(j) + "_data")
                 # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
                 dbi.add_entry(table_name,\
                               channels[j].x,\
@@ -92,8 +92,8 @@ while(1):
     except KeyboardInterrupt:
         GPIO.cleanup()
         for l in range(num_instr):
-            table_name = ("\nInstrument" + str(l) + "_data")
-            print table_name
+            table_name = ("channel" + str(l) + "_data")
+            print "\n", table_name
             dbi.fetch_all_entries(table_name)
         dbi._exit()
         break

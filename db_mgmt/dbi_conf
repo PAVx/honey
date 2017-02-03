@@ -5,7 +5,7 @@ dbin = instrumentDB
 
 [CORE_VARIABLES]
 n_drones = 3
-n_channels = 6
+n_channels = 5
 n_samples = 4
 sample_rate = 1
 

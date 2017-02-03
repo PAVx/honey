@@ -48,9 +48,16 @@ def reset_db():
     cur.execute(cmd)
     cmd = ("CREATE DATABASE IF NOT EXISTS " + ground_db)
     cur.execute(cmd)
-    for drone in drones_ref:
-        cmd = ("DROP DATABASE IF EXISTS " + drone)
+    # Drop all them databases
+    schema_db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db='information_schema')
+    schema_cur = schema_db.cursor()
+    cmd = ("SELECT `SCHEMA_NAME` FROM `SCHEMATA` WHERE SCHEMA_NAME LIKE '" + drone_db + "%'")
+    schema_cur.execute(cmd)
+    jay_set = schema_cur.fetchall()
+    for jay in jay_set:
+        cmd = ("DROP DATABASE IF EXISTS " + jay[0])
         cur.execute(cmd)
+    for drone in drones_ref:
         cmd = ("CREATE DATABASE IF NOT EXISTS " + drone)
         cur.execute(cmd)
     print("DBs newly created and connected.\n")

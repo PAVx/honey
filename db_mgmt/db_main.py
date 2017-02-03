@@ -13,10 +13,26 @@ config_file_name = "dbi_conf"
 config = ConfigParser.ConfigParser()
 config.readfp(open(r'dbi_conf'))
 _core_variables = 'CORE_VARIABLES'
+_identifiers = 'IDENTIFIERS'
 # Set sample size
 n = int(config.get(_core_variables, 'n_samples'))
-num_instr = int(config.get(_core_variables, 'n_channels'))
 wait_time = 1/(float(config.get(_core_variables, 'sample_rate')))
+# Load identifiers for ground and drones
+# ground_db = config.get(_db_info, 'dbin')
+ground_db = config.get(_identifiers, 'rover')
+drone_db = config.get(_identifiers, 'drone')
+# Get number of drones in system
+num_drones = int(config.get(_core_variables, 'n_drones'))
+# Create drone reference table
+drones_ref = []
+for i in range(num_drones):
+    drones_ref.append(drone_db + str(i) + "DB")
+# Get number of instruments/channels
+num_instr = int(config.get(_core_variables, 'n_channels'))
+# Create instrument/channel reference table
+channels_ref = []
+for i in range(num_instr):
+    channels_ref.append("channel" + str(i) + "_data")
 print "Sample size set to ", n, " every ", wait_time, " seconds." 
 
 # Some clock stuff
@@ -73,29 +89,34 @@ while(1):
 
         # Check for nth measurement and store to database.
         m = m + 1
+
+        # At the end of n samples, perform averaging
         if m >= n:
             m = 0
-            for j in range(num_instr):
-                # Create table name
-                table_name = ("channel" + str(j) + "_data")
-                # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
-                dbi.add_entry(table_name,\
-                              channels[j].x,\
-                              channels[j].y,\
-                              channels[j].z,\
-                              n_average(channels[j].meas_val),\
-                              n_average(channels[j].pts))        
+            for drone in drones_ref:
+                for ch in channels_ref:
+                    # Get index for channel storage
+                    j = channels_ref.index(ch)
+                    # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
+                    dbi.add_entry(drone,\
+                                  ch,\
+                                  channels[j].x,\
+                                  channels[j].y,\
+                                  channels[j].z,\
+                                  n_average(channels[j].meas_val),\
+                                  n_average(channels[j].pts))        
 
         # Wait for tick
         time.sleep(wait_time)
 
     except KeyboardInterrupt:
         GPIO.cleanup()
-        for l in range(num_instr):
-            table_name = ("channel" + str(l) + "_data")
-            print "\n", table_name
-            dbi.fetch_all_entries(table_name)
-        dbi._exit()
+        for drone in drones_ref:
+            for ch in channels_ref:
+                print "\n", drone, "\n", ch
+                dbi.fetch_all_entries(drone, ch)
+            dbi._exit(drone)
+        print "\n ALL ENTRIES LISTED! Program closing."
         break
 
 ##GPIO.cleanup()

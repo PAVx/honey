@@ -80,7 +80,7 @@ m = 0
 while(1):
     try: 
         # Wait for the rising edge of a "clock tick"
-        # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
+        GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
 
         # Proceed assembling data in all channels
         assemble_channels(m)
@@ -107,7 +107,7 @@ while(1):
                                   n_average(channels[j].pts))        
 
         # Wait for tick
-        time.sleep(wait_time)
+        #time.sleep(wait_time)
 
     except KeyboardInterrupt:
         GPIO.cleanup()

@@ -80,7 +80,7 @@ m = 0
 while(1):
     try: 
         # Wait for the rising edge of a "clock tick"
-        GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
+        # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
 
         # Proceed assembling data in all channels
         assemble_channels(m)
@@ -107,14 +107,23 @@ while(1):
                                   n_average(channels[j].pts))        
 
         # Wait for tick
-        #time.sleep(wait_time)
+        time.sleep(wait_time)
 
     except KeyboardInterrupt:
         GPIO.cleanup()
+        #delete the entire folder
+        #make the data folder
+        dbi._make_folder("data")
         for drone in drones_ref:
+            dbi._make_folder("data/" + drone)
+            #make the drone folders here
             for ch in channels_ref:
                 print "\n", drone, "\n", ch
-                dbi.fetch_all_entries(drone, ch)
+                log = open("data/"+ drone + "/" + drone + "_" + ch + "_log.txt", 'w')
+                print("File opened. Writing to file...")
+                dbi.write_all_entries(drone, ch, log)
+                log.close()
+                #dbi.fetch_all_entries(drone, ch)
             dbi._exit(drone)
         print "\n ALL ENTRIES LISTED! Program closing."
         break

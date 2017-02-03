@@ -8,6 +8,9 @@ import time
 import datetime
 from random import randint
 import ConfigParser
+import os
+import errno
+ 
 
 # Get config file
 print("Configuring interface program... ")
@@ -68,6 +71,16 @@ def fetch_all_entries(target_db, table):
         cur.execute(fetch_cmd)
         _print(cur)
 
+def write_all_entries(target_db, table, log):
+        # Point to correct database
+        db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=target_db)
+        cur = db.cursor()
+        # Get all entries
+        print ("ALL ENTRIES FOR " + target_db + " -> " + table + ":\n    ")
+        fetch_cmd = ("SELECT * FROM `" + table + "` ORDER BY time")
+        cur.execute(fetch_cmd)
+        _write_channel(cur, log)
+
 def manual_mysql(command):
         cmd = command
         cur.execute(cmd)
@@ -93,6 +106,23 @@ def _print(result_cur):
                         that_string = " | "
                         print_string = print_string  + this_string + that_string
                 print print_string
+# Write to a channel file
+def _write_channel(result_cur, log):       
+        result = result_cur.fetchall()
+        print_string = "|"
+        for row in result:
+                print_string = "| "
+                for col in row:
+                        this_string = str(col)
+                        that_string = " | "
+                        print_string = print_string  + this_string + that_string
+                log.write(print_string)
+                log.write("\n")
+
+# Create a folder for the specified drone
+def _make_folder(folder_name) :
+        if not os.path.exists(folder_name):
+                os.makedirs(folder_name)
 
 # RUN PROGRAM
 ##add_entry("Instrument0_data", randint(0,9), randint(0,9), randint(0,9), randint(0,9), randint(0,9))

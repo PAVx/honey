@@ -10,6 +10,7 @@ from random import randint
 import ConfigParser
 import os
 import errno
+import shutil
  
 
 # Get config file
@@ -109,12 +110,12 @@ def _print(result_cur):
 # Write to a channel file
 def _write_channel(result_cur, log):       
         result = result_cur.fetchall()
-        print_string = "|"
+        #print_string = "|"
         for row in result:
-                print_string = "| "
+                print_string = ""
                 for col in row:
                         this_string = str(col)
-                        that_string = " | "
+                        that_string = ","
                         print_string = print_string  + this_string + that_string
                 log.write(print_string)
                 log.write("\n")

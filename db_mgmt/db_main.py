@@ -7,6 +7,7 @@ from random import randint
 import ConfigParser
 import time
 import RPi.GPIO as GPIO
+import shutil
 
 # Configuration
 config_file_name = "dbi_conf"
@@ -112,6 +113,7 @@ while(1):
     except KeyboardInterrupt:
         GPIO.cleanup()
         #delete the entire folder
+        shutil.rmtree("data")
         #make the data folder
         dbi._make_folder("data")
         for drone in drones_ref:
@@ -119,7 +121,7 @@ while(1):
             #make the drone folders here
             for ch in channels_ref:
                 print "\n", drone, "\n", ch
-                log = open("data/"+ drone + "/" + drone + "_" + ch + "_log.txt", 'w')
+                log = open("data/"+ drone + "/" + drone + "_" + ch + "_log.csv", 'w')
                 print("File opened. Writing to file...")
                 dbi.write_all_entries(drone, ch, log)
                 log.close()

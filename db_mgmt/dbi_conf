@@ -4,8 +4,8 @@ user = root
 dbin = instrumentDB
 
 [CORE_VARIABLES]
-n_drones = 3
-n_channels = 5
+n_drones = 1
+n_channels = 3
 n_samples = 6
 sample_rate = 10
 

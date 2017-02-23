@@ -3,6 +3,8 @@
 # core database program
 
 import dbi
+import dbz
+from dbc import channel
 from random import randint
 import ConfigParser
 import time
@@ -43,24 +45,25 @@ GPIO.setup(CLOCK_IN, GPIO.IN)
 
 
 # Instrument Channels
-class channel:
-    time = 0
-    x = 0
-    y = 0
-    z = 0
-    meas_val = [0] * n
-    pts = [0] * n
+##class channel:
+##    time = 0
+##    x = 0
+##    y = 0
+##    z = 0
+##    meas_val = [0] * n
+##    pts = [0] * n
 
 channels = [channel for count in range(num_instr)]
 
 # Data Construction Functions
 def assemble_ch_data(ch, i):
-    channels[ch].meas_val[i] = randint(0,100)
-    channels[ch].pts[i] = randint(0,100)
-    channels[ch].time = randint(0,100)
-    channels[ch].x = randint(0,100)
-    channels[ch].y = randint(0,100)
-    channels[ch].z = randint(0,100)
+##    channels[ch].meas_val[i] = randint(0,100)
+##    channels[ch].pts[i] = randint(0,100)
+##    channels[ch].time = randint(0,100)
+##    channels[ch].x = randint(0,100)
+##    channels[ch].y = randint(0,100)
+##    channels[ch].z = randint(0,100)
+    channels[ch] = dbz.poll(i)
 
 def assemble_channels(i):
     for k in range(num_instr):
@@ -94,6 +97,8 @@ while(1):
         # At the end of n samples, perform averaging
         if m >= n:
             m = 0
+            # TEST THE DOOR
+            
             for drone in drones_ref:
                 for ch in channels_ref:
                     # Get index for channel storage

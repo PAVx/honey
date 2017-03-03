@@ -6,6 +6,7 @@ body{
 	max-width: 100%;
     overflow-x: hidden;
 }
+
 /* creates logo*/
 .img-circle{
 	float: left;
@@ -15,6 +16,7 @@ body{
 	height: 100px;
 	width: 100px;
 }
+
 /* creates the spacing needed for the logo and title*/
 .main{
 	padding-bottom: 2.5em;
@@ -22,6 +24,7 @@ body{
 	padding-top: 1em;
 	padding-left:0.5em;
 }
+
 /* creates green background: behind tabs, log and title*/
 .backg{
 	-moz-background-size: cover;
@@ -33,11 +36,13 @@ body{
 	height: 11em;
 }
 
+/* eliminates the button style from when the tabs are created*/
 .link{
 	background: none;
 	border:none;	
 	color: black;
 }
+
 /* creates the title: font, color,size*/
 .main h2{
 	margin: 0 0 0 0;
@@ -52,42 +57,39 @@ body{
 	left: 1em;
 	color: Black;
 }
+
 /* fills in the tabs, to make visible*/
 .tablinks{
 	background: white;
-}
-.MapDisplay{
-	left: 1em;
+	color: Black;
 }
 
+/* map styling */
+.mapstyle{
+	padding-left: 3em;
+	padding-top: 2em;
+}
+.markerText{
+	color: black;
+}
+
+/* styles the drone tabs*/
 .dropdown-toggle{
 	background: white;
-	 color: blue;
+	 color: Black;
 }
+
+.refresh{
+	color:black;
+}
+
 /* styles the table to display data*/
 table.db-table {
 	border-right:1px solid #ccc; border-bottom:1px solid #ccc; 
 }
 table.db-table th{
 	background:#eee; padding:5px; border-left:1px solid #ccc; border-top:1px solid #ccc; 
-	}
+}	
 table.db-table td{ 
 	padding:5px; border-left:1px solid #ccc; border-top:1px solid #ccc; 
-}
-
-/*used for testing v v v v*/
-.standard{
-	background: gray;
-	height: 3em;
-}
-
-h2 {
-	font-family: Helvetica, Geneva, Arial,SunSans-Regular,
-	sans-serif;
-}
-
-.highlight{
-	background-color: #ffffff;
-    opacity: 0.75;
-    filter: alpha(opacity=75);
 }

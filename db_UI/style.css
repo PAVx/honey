@@ -1,0 +1,95 @@
+/* entire background*/
+body{
+	font-family: Georgia, "Times New Roman",Times, serif;
+	background-color: rgb(3,53,52);
+	color: white;
+	max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* creates logo*/
+.img-circle{
+	float: left;
+	border-radius: 50%;
+	border: 2px solid black;
+	background: white;
+	height: 100px;
+	width: 100px;
+}
+
+/* creates the spacing needed for the logo and title*/
+.main{
+	padding-bottom: 2.5em;
+	height: 8em;
+	padding-top: 1em;
+	padding-left:0.5em;
+}
+
+/* creates green background: behind tabs, log and title*/
+.backg{
+	-moz-background-size: cover;
+	-webkit-background-size: cover;
+	background-size: cover;
+	background-position: top center;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	height: 11em;
+}
+
+/* eliminates the button style from when the tabs are created*/
+.link{
+	background: none;
+	border:none;	
+	color: black;
+}
+
+/* creates the title: font, color,size*/
+.main h2{
+	margin: 0 0 0 0;
+	position: relative;
+	font-family: "Merienda One";
+	font-size: 40px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: bold;
+	line-height: 45px;
+	top: 0.5em;
+	left: 1em;
+	color: Black;
+}
+
+/* fills in the tabs, to make visible*/
+.tablinks{
+	background: white;
+	color: Black;
+}
+
+/* map styling */
+.mapstyle{
+	padding-left: 3em;
+	padding-top: 2em;
+}
+.markerText{
+	color: black;
+}
+
+/* styles the drone tabs*/
+.dropdown-toggle{
+	background: white;
+	 color: Black;
+}
+
+.refresh{
+	color:black;
+}
+
+/* styles the table to display data*/
+table.db-table {
+	border-right:1px solid #ccc; border-bottom:1px solid #ccc; 
+}
+table.db-table th{
+	background:#eee; padding:5px; border-left:1px solid #ccc; border-top:1px solid #ccc; 
+}	
+table.db-table td{ 
+	padding:5px; border-left:1px solid #ccc; border-top:1px solid #ccc; 
+}

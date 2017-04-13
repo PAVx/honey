@@ -4,6 +4,7 @@
 	$host = $db['host'];
 	$user = $db['user'];
 	$pass = $db['pass'];
+	$homedb = $db['rover'];
 	/* Open a connection to a MySQL server */
 	$connection = mysqli_connect ($host, $user, $pass) or die('Not connected : ' . mysql_error());
 	
@@ -14,10 +15,11 @@
 	/* fetchall databases */
 	$all_database = mysqli_query($connection,'SHOW DATABASES') or die('cannot show tables');
 	/*itterate through the database and select most recent time stamp, lat and long pts */
-	while($database = mysqli_fetch_array($all_database,MYSQLI_BOTH)){
-		/* Set markers only for the active MySQL databases (and maybe not the first drone) */
+	while($database = mysqli_fetch_array($all_database,MYSQLI_BOTH)){ //select only the drone db
+		/* Set markers only for the active rover tables */
 		if( (strcmp($database[0],"information_schema") != 0) & (strcmp($database[0],"mysql") !=0 ) & 
-				(strcmp($database[0],"performance_schema")!=0 ) & (strcmp($database[0],"sys") != 0) ){//don't show default db
+				(strcmp($database[0],"performance_schema")!=0 ) & (strcmp($database[0],"phpmyadmin") != 0) &
+					(strcmp($database[0],$homedb) != 0)  ){//don't show default db or rover
 			/* connect to new database */
 			$db_selected = mysqli_select_db($connection,$database[0]) or die ('Can\'t use db : ' . mysql_error());
 			$tableList = mysqli_query($connection,'SHOW TABLES') or die('cannot show tables');

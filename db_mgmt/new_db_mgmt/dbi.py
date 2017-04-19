@@ -24,6 +24,7 @@ db_host = config.get(_db_info, 'host')
 db_user = config.get(_db_info, 'user')
 db_pass = creds.db_pass
 db_inst = config.get(_db_info, 'dbin')
+# I dont think this line is needed:
 num_tables = config.get(_inst_conf, 'n_channels')
 
 # Get number of channels per drone
@@ -39,7 +40,7 @@ db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass)
 cur = db.cursor()
 
 # Add entry function
-def add_entry(target_db, target_t, x, y, z, sensordata_list, sensorpts_list):
+def add_entry(target_db, target_t, x, y, z, s):
         # Point to correct database
         db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=target_db)
         cur = db.cursor()
@@ -48,6 +49,13 @@ def add_entry(target_db, target_t, x, y, z, sensordata_list, sensorpts_list):
         # Get time
         ts = time.time()
         timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+
+        # Adapt Sensor list to two individual lists
+        sensordata_list = []
+        sensorpts_list = []
+        for i in range(len(s)):
+            sensordata_list.append(s[i].avg_data)
+            sensorpts_list.append(s[i].pts)
         
         # Build query
         sensor_str = ""
@@ -153,8 +161,8 @@ def _make_folder(folder_name) :
                 os.makedirs(folder_name)
 
 # RUN PROGRAM
-sample_meas = (43,42,41,39)
-sample_pts = (1,2,3,5)
-add_entry("jays", "jay0", randint(0,9), randint(0,9), randint(0,9), sample_meas, sample_pts)
-fetch_all_entries("jays", "jay0")
-
+##sample_meas = (43,42,41,39)
+##sample_pts = (1,2,3,5)
+##add_entry("jays", "jay0", randint(0,9), randint(0,9), randint(0,9), sample_meas, sample_pts)
+##fetch_all_entries("jays", "jay0")
+##

@@ -1,0 +1,15 @@
+[DB_MASTER_INFO]
+host0 = pavx-db.cogqgrznqaxu.us-east-1.rds.amazonaws.com
+host1 = localhost
+user = root
+dbin = instrumentDB
+
+[CORE_VARIABLES]
+n_drones = 1
+n_channels = 1
+n_samples = 2
+sample_rate = 1000
+
+[IDENTIFIERS]
+rover = tortoise
+drone = jay

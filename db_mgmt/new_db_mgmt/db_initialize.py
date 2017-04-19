@@ -15,8 +15,7 @@ _db_info = 'DB_MASTER_INFO'
 _core_variables = 'CORE_VARIABLES'
 _identifiers = 'IDENTIFIERS'
 # Load credential information
-db_host0 = config.get(_db_info, 'host0')
-db_host1 = config.get(_db_info, 'host1')
+db_host = config.get(_db_info, 'host')
 db_user = config.get(_db_info, 'user')
 db_pass = creds.db_pass
 
@@ -41,52 +40,30 @@ for i in range(num_sensors):
 print ("Number of sensor channels to be configured: ", num_sensors)
 print("Configuration complete!\n")
 
-online_flag = True
-
 # Connect to host, set cursor, create db if doesn't exist
-try:
-    db = MySQLdb.connect(host=db_host0, user=db_user, passwd=db_pass)
-except:
-    print "Unable to connect online. Going offline!"
-    online_flag = False
+db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass)
+cur = db.cursor()
 
-def reset_db(db_host):
-    db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass)
-    cur = db.cursor()
+def reset_db():
     print("Resetting DBs...")
     # Create rover database
     cmd = ("DROP DATABASE IF EXISTS " + ground_db)
     cur.execute(cmd)
     cmd = ("CREATE DATABASE IF NOT EXISTS " + ground_db)
     cur.execute(cmd)
-#may need to change collation to utf8_bin
-    cmd = ("ALTER DATABASE `" + ground_db + "` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci")
-    cur.execute(cmd);
-    # Create drone database
+    # Create rover database
     cmd = ("DROP DATABASE IF EXISTS " + drone_db)
     cur.execute(cmd)
     cmd = ("CREATE DATABASE IF NOT EXISTS " + drone_db)
     cur.execute(cmd)
-#may need to change collation to utf8_bin
-    cmd = ("ALTER DATABASE `" + drone_db + "` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci")
-    cur.execute(cmd);
     print("DBs newly created and connected.\n")
 
-def add_tables(db_host):
-    #create rover table
-    db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=ground_db)
-    cur = db.cursor()
-    cmd = ("CREATE TABLE IF NOT EXISTS `flight` (time timestamp, alert int, x_0 double, y_0 double, x_1 double, y_1 double )")
-    cur.execute(cmd)
-    print "Added rover table.\n"
-    
-    #create drone tables
+def add_tables():
     db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=drone_db)
     cur = db.cursor()
     for drone in drones_ref:
         #NEW DATABASE STRUCTURE
-        #cmd = ("CREATE TABLE IF NOT EXISTS " + drone + "(time timestamp, loc_x int, loc_y int, loc_z int, ")
-        cmd = ("CREATE TABLE IF NOT EXISTS " + drone + "(time timestamp, loc_x double, loc_y double, loc_z double, ")
+        cmd = ("CREATE TABLE IF NOT EXISTS " + drone + "_data" + "(time timestamp, loc_x int, loc_y int, loc_z int, ")
         for sensor in sensors_ref:
             cmd = cmd + sensor + "_data" + " int, " + sensor + "_pts" + " int"
             if not(sensors_ref.index(sensor) == (len(sensors_ref)-1)):
@@ -97,14 +74,7 @@ def add_tables(db_host):
         print "Added " + drone + "'s table."
 
 # Main setup process        
-print "Setting up database system...\n"
-# If online systems are available, construct online database
-if online_flag:
-    print "Creating online database...\n"
-    reset_db(db_host0)
-    add_tables(db_host0)
-# Construct local database either way
-print "Creating local database...\n"
-reset_db(db_host1)
-add_tables(db_host1)
+print "Setting up database system..."
+reset_db()
+add_tables()
 print "\nDatabases have been initialized! Set up done."

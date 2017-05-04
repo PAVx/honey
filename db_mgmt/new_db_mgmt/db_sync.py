@@ -20,9 +20,11 @@ db_pass = creds.db_pass
 db_inst = config.get(_db_info, 'dbin')
 num_tables = config.get(_inst_conf, 'n_channels')
 
+#there_was_a_difference = False
+
 #SELECT * FROM `jay0` WHERE 1 ORDER BY time DESC LIMIT 3
 
-def table_sync(updated_host, outdated_host, db, table):
+def table_update(updated_host, outdated_host, db, table):
     # Set the hosts and connections
     host0 = updated_host
     host1 = outdated_host
@@ -63,16 +65,35 @@ def table_sync(updated_host, outdated_host, db, table):
             old_cur.execute(cmd)
         db0.commit()
         db1.commit()
-    else:
-        print db + "->" + table + " is synced across hosts."
 
-def db_sync(host0, host1, db):
+        # Signal there was a difference
+        there_was_a_difference = True
+    else:
+        if 1:
+            do_nothing = 0
+            #print db + "->" + table + " is synced across hosts."
+            #there_was_a_difference = False
+
+def db_update(host0, host1, db):
     db0 = MySQLdb.connect(host=host0, user=db_user, passwd=db_pass, db=db)
     cur0 = db0.cursor()
     db1 = MySQLdb.connect(host=host1, user=db_user, passwd=db_pass, db=db)
     cur1 = db1.cursor()
     
     # Sync each table in the database
+    cmd = "SELECT table_name FROM information_schema.tables where table_schema='" + db + "'"
+    cur0.execute(cmd)
+    cur1.execute(cmd)
+    tablelist0  = cur0.fetchall()
+    tablelist1 = cur1.fetchall()
+    if (tablelist0 != tablelist1):
+        print "Datatables do not match! Sync failed!"
+        return
+
+    # Proceed with sync
+    tablelist = tablelist0
+    for table in tablelist:
+        table_update(db_host0, db_host1, db, table[0])
     
 
 def num_rows(host, db, table):
@@ -103,5 +124,8 @@ def string_literalize(update):
     return literalized        
 
 # Program to test script
-table_sync(db_host0, db_host1, "jays", "jay0")
+while 1:
+    db_update(db_host0, db_host1, "tortoise")
+    time.sleep(2.5)
+#table_sync(db_host0, db_host1, "jays", "jay0")
 #get_cols(db_host1, "jays", "jay0")

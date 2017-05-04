@@ -66,6 +66,15 @@ def table_sync(updated_host, outdated_host, db, table):
     else:
         print db + "->" + table + " is synced across hosts."
 
+def db_sync(host0, host1, db):
+    db0 = MySQLdb.connect(host=host0, user=db_user, passwd=db_pass, db=db)
+    cur0 = db0.cursor()
+    db1 = MySQLdb.connect(host=host1, user=db_user, passwd=db_pass, db=db)
+    cur1 = db1.cursor()
+    
+    # Sync each table in the database
+    
+
 def num_rows(host, db, table):
     db = MySQLdb.connect(host=host, user=db_user, passwd=db_pass, db=db)
     cur = db.cursor()

@@ -92,15 +92,14 @@ def parse(data, i):
     ch.s[0].data[i] = a2d.convert(data[30:37])
     return ch
 
-def parse2(data, i):
-    ch = channel()
-    ch.x = int(data[7:11])
-    ch.y = int(data[11:15])
-    ch.z = int(data[15:19])
-    ch.time = int(data[19:24])
-    ch.meas_val[i] = int(data[24:-1])
-    ch.pts[i] = 0
-    return ch
+def parse_loc(byte_array):
+    hex_string = ""
+    for i in range(8):
+        hex_val = hex(byte_array[i])
+        hex_string += hex_val[2:].zfill(2)
+    print("0x"+hex_string)
+    parsed = struct.unpack('!d', hex_string.decode('hex'))[0]
+    print(parsed)
 
 # Example code used to create functions in this file. Not relevant anymore.
 def main():
@@ -130,4 +129,4 @@ def main():
 if __name__ == '__main__':
     main()
     #poll2()
-    #init_poll()
+#init_poll()

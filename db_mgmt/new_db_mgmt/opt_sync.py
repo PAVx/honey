@@ -3,7 +3,7 @@
 import MySQLdb
 import creds
 import time
-import datetime
+from datetime import datetime
 from random import randint
 import ConfigParser
 
@@ -50,6 +50,7 @@ def table_sync(updated_host, outdated_host, db, table):
     # If the difference exists, update the new table
     if diff:
         print "Changes detected: " + str(diff)
+        # Select the rows to be updated, the most recent ones
         cmd = "SELECT * FROM `" + table + "` WHERE 1 ORDER BY time DESC LIMIT " + str(diff)
         new_cur.execute(cmd)
         updates = new_cur.fetchall()
@@ -57,6 +58,11 @@ def table_sync(updated_host, outdated_host, db, table):
         for update in updates:
             str_update = str(update)
             print str_update
+            # Insert new rows into the old table
+            cmd = "INSERT INTO `" + table + "` VALUES " + str(string_literalize(update))
+            old_cur.execute(cmd)
+        db0.commit()
+        db1.commit()
     else:
         print db + "->" + table + " is synced across hosts."
 
@@ -81,5 +87,10 @@ def get_cols(host, db, table):
     print col_names
     return col_names
 
-#table_sync(db_host0, db_host1, "jays", "jay0")
-get_cols(db_host1, "jays", "jay0")
+def string_literalize(update):
+    for i in range(len(update)):
+        update[i] = str(update[i])
+    return update        
+
+table_sync(db_host0, db_host1, "jays", "jay0")
+#get_cols(db_host1, "jays", "jay0")

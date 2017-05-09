@@ -67,10 +67,6 @@
 		$current_state = $parsed_json['current_observation']['display_location']['state'];
 		$current_zip = $parsed_json['current_observation']['display_location']['zip'];
 		
-		/* Station Data */
-		$current_station_id = $parsed_json['current_observation']['station_id'];
-		$current_observation_time = $parsed_json['current_observation']['observation_time'];
-		
 		/* Weather Data */
 		$weather = $parsed_json['current_observation']['weather'];
 		$weather_temp_f = $parsed_json['current_observation']['temp_f'];
@@ -104,7 +100,6 @@
 		//parse for the week...
 		$forecast_string = file_get_contents("http://api.wunderground.com/api/5eda6c03f8f8ae0b/forecast/q/".$QueryState."/".$QueryCity.".json");
 		$parsed_forecast = json_decode($forecast_string,true);
-		$forecast_array = $forecast_string['forecast']['txt_forecast']['forecast'];
 		
 		//table 1
 		$curr_time = time();
@@ -123,32 +118,43 @@
 		echo "<table class='WeatherGUI'>";
 		echo "<tbody>";
 		echo "<thead> <tr>";//list weekday
-			echo "<th>". " weekday 0". "</th>";
-			echo "<th>". " weekday 1". "</th>";
-			echo "<th>". " weekday 2". "</th>";
-			echo "<th>". " weekday 3". "</th>";
+			echo "<th>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][0]['date']['weekday_short'] . "</th>";
+			echo "<th>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][1]['date']['weekday_short'] . "</th>";
+			echo "<th>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][2]['date']['weekday_short'] . "</th>";
+			echo "<th>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][3]['date']['weekday_short'] . "</th>";
 		echo "</tr> </thead>";
 		echo "<tr>";//list icon
-			echo "<td> <img src='https://icons.wxug.com/i/c/j/". $current_icon .".gif'> </td>"; //icon for weekD0
-			echo "<td> <img src='https://icons.wxug.com/i/c/i/". $current_icon .".gif'> </td>"; //icon for weekD1
-			echo "<td> <img src='https://icons.wxug.com/i/c/h/". $current_icon .".gif'> </td>"; //icon for weekD2
-			echo "<td> <img src='https://icons.wxug.com/i/c/g/". $current_icon .".gif'> </td>"; //icon for weekD3
+			echo "<td> <img src='https://icons.wxug.com/i/c/g/". $parsed_forecast['forecast']['simpleforecast']['forecastday'][0]['icon'] .".gif'> </td>"; //icon for weekD0
+			echo "<td> <img src='https://icons.wxug.com/i/c/g/". $parsed_forecast['forecast']['simpleforecast']['forecastday'][1]['icon'] .".gif'> </td>"; //icon for weekD1
+			echo "<td> <img src='https://icons.wxug.com/i/c/g/". $parsed_forecast['forecast']['simpleforecast']['forecastday'][2]['icon'].".gif'> </td>"; //icon for weekD2
+			echo "<td> <img src='https://icons.wxug.com/i/c/g/". $parsed_forecast['forecast']['simpleforecast']['forecastday'][3]['icon'] .".gif'> </td>"; //icon for weekD3
 		echo "</tr>";
 		echo "<tr>";//list description
-			echo "<td>". $current_icon ."</td>"; //descr. for weekD0
-			echo "<td>". $current_icon ."</td>"; //descr. for weekD1
-			echo "<td>". $current_icon ."</td>"; //descr. for weekD2
-			echo "<td>". $current_icon ."</td>"; //descr. for weekD3
+			echo "<td>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][0]['conditions'] ."</td>"; //descr. for weekD0
+			echo "<td>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][1]['conditions'] ."</td>"; //descr. for weekD1
+			echo "<td>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][2]['conditions'] ."</td>"; //descr. for weekD2
+			echo "<td>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][3]['conditions'] ."</td>"; //descr. for weekD3
 		echo "</tr>";
 		echo "<tr>";//list temp 
-			echo "<td>". $weather_temp_f ."</td>"; //temp for weekD0
-			echo "<td>". $weather_temp_f ."</td>"; //temp for weekD1
-			echo "<td>". $weather_temp_f  ."</td>"; //temp for weekD2
-			echo "<td>". $weather_temp_f  ."</td>"; //temp for weekD3
+			echo "<td>". $parsed_forecast['forecast']['simpleforecast']['forecastday'][0]['high']['fahrenheit'] ."&deg;F/ ".
+					$parsed_forecast['forecast']['simpleforecast']['forecastday'][0]['low']['fahrenheit'] ."&deg;F</td>"; //temp for weekD0
+			echo "<td>".  $parsed_forecast['forecast']['simpleforecast']['forecastday'][1]['high']['fahrenheit'] ."&deg;F/ ".
+					$parsed_forecast['forecast']['simpleforecast']['forecastday'][1]['low']['fahrenheit']."&deg;F</td>"; //temp for weekD1
+			echo "<td>".  $parsed_forecast['forecast']['simpleforecast']['forecastday'][2]['high']['fahrenheit'] ."&deg;F/ ".
+					$parsed_forecast['forecast']['simpleforecast']['forecastday'][2]['low']['fahrenheit'] ."&deg;F</td>"; //temp for weekD2
+			echo "<td>".  $parsed_forecast['forecast']['simpleforecast']['forecastday'][3]['high']['fahrenheit'] ."&deg;F/ ".
+					$parsed_forecast['forecast']['simpleforecast']['forecastday'][3]['low']['fahrenheit'] ."&deg;F</td>"; //temp for weekD3
 		echo "</tr>";
 		echo "</tbody>";
 		echo "</table>";
 		
+		// echo "<p><span id='Location'> Location: ".$current_city . ", " . $current_state . " (" . $current_zip . ") </span></p>";
+		// echo "<p><span id='temp'> Temperature: ". $weather_temp_f ." </span></p>";
+		// echo "<p><span id='wind'> Wind Speed: ". $weather_wind_mph ." </span></p>";
+		// echo "<p><span id='temp'> Humidity: ". $weather_relative_humidity ." </span></p>";
+		// echo "<p><span id='wind'> Precipitation: ". $weather_precip_today_metric ." </span></p>";
+		// echo "<p><span id='wind'> Dewpoint: ". $weather_dewpoint_string ." </span></p>";
+		// echo "<p><span id='wind'> <img src='https://icons.wxug.com/i/c/h/". $current_icon .".gif'> Description: ". $current_icon." </span></p>";
 	} 
 	
 ?>

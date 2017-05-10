@@ -88,7 +88,7 @@
 			<h3>PSAV Map</h3>		
 			<div id="map" style="width: 600px; height: 400px;"></div>
 			<script async defer
-			src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC_HcJ7YyXFD0fVavbN0DuBN7_N2HnHvao&callback=initMap">
+			src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC_HcJ7YyXFD0fVavbN0DuBN7_N2HnHvao&libraries=visualization&callback=initMap">
 			</script>
 			<br>
 		</div> 

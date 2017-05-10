@@ -183,8 +183,7 @@ function check_scan(a,b){
 		xmlhttp = new XMLHttpRequest();
 	} else {// code for IE6, IE5
 		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-	}
-	
+	}	
 	/*Once its done retrieving the data from file specified below*/
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -197,12 +196,31 @@ function check_scan(a,b){
 	/*open and send new data inputs to php file*/
 	xmlhttp.open("GET","db_UI/ScanCheck.php?x1="+x1+"&x2="+x2+"&y1="+y1+"&y2="+y2,true);//pass variables to php file
 	xmlhttp.send();
-	
 }
 
 var ne;
 var sw;
 var flag = 0;
+var heatmap;
+var num_drones = 1;
+var hm_data = new Array();
+hm_refresh(30);
+//~ hm_data = [
+   //~ [37.006, -122.0507],
+   //~ [37.006, -122.0505],
+   //~ [37.006, -122.0503],
+   //~ [37.006, -122.0501],
+   //~ [37.006, -122.0499],
+   //~ [37.006, -122.0497],
+   //~ [37.006, -122.0495],
+   //~ [37.008, -122.0507],
+   //~ [37.008, -122.0505],
+   //~ [37.008, -122.0503],
+   //~ [37.008, -122.0501],
+   //~ [37.008, -122.0499],
+   //~ [37.008, -122.0497],
+   //~ [37.008, -122.0495]
+//~ ];
 function scan_Map(values) {
 	console.log("scanning");//for debugging
 	var id = document.getElementById(values);
@@ -222,11 +240,11 @@ function scan_Map(values) {
 		}else{
 			update_Bounds();//load default or get one of drones coord
 		}
-		
 		//create new map with rectangle ---> update map by using set map
 		map = new google.maps.Map(document.getElementById('map'), {
 			center: center_pos,
-			zoom:16
+			zoom:16,
+			mapTypeId: 'hybrid'
 		});
 
 		// Define the rectangle and set its editable property to true.
@@ -253,8 +271,49 @@ function scan_Map(values) {
 		}
 		//check if ne and sw is null, if so set up default
 		check_scan(ne, sw );
-   }	
+   }
+   var heatmap = new google.maps.visualization.HeatmapLayer({
+        data: hm_draw(),
+        map: map
+    });	
+  
 }
+var tdata;
+//Reads the database, adding any entries whose score is above threshold to the heatmap table
+function hm_refresh(threshold) {
+	var xmlhttp;	
+	if (window.XMLHttpRequest) {// code for newer browsers			
+		xmlhttp = new XMLHttpRequest();
+	} else {// code for IE6, IE5
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}	
+        xmlhttp.onreadystatechange = function() {
+        	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			tdata = xmlhttp.responseText.split(" ");
+			console.log(tdata);
+			tdata.forEach(function(element) {
+			   	hm_data.push(parseFloat(element));
+			});
+			console.log(hm_data);
+		}
+	}
+	xmlhttp.open("GET","db_UI/HeatMap.php?data=jays&n=1&th="+threshold,true);//pass variables to php file    
+       	xmlhttp.send();
+}
+
+//uses the heatmap table to create data points for the heatmap
+function hm_draw() {
+    var heatmap = new Array();
+    var i = 0;
+    do {
+        heatmap.push(new google.maps.LatLng(hm_data[i], hm_data[i+1]));
+        i += 2;
+    }
+    while(i < hm_data.length-1);
+    console.log("heatmap"+heatmap);
+    return heatmap;
+}
+
       // Show the new coordinates for the rectangle in an info window.
 
 /** @this {google.maps.Rectangle} */
@@ -286,57 +345,56 @@ function showNewRect(event) {
 function initMap() {
 	map = new google.maps.Map(document.getElementById("map"), {
 	  center: {lat: 36.999783, lng: -122.063565},//get one of drone coordinates
-	  zoom: 16
+	  zoom: 16,
+	  mapTypeId: 'hybrid'
 	});				
 	
 	infoWindow = new google.maps.InfoWindow();	
-	infoWindow.open(map);
-	 
-	//create markers
-	// Change this depending on the name of your PHP or XML file
-	
-	// loadFile('db_UI/createMarkers.php', function(data) {
-	// var xml = data.responseXML;//should have the array of markers created from php file
-	// var markers = xml.documentElement.getElementsByTagName("marker");
-		// Array.prototype.forEach.call(markers, function(markerElem) {
-		  // var name = markerElem.getAttribute("name");
-		  // var pts = markerElem.getAttribute("pts");
-		  // var type = markerElem.getAttribute("type");
-		  // var point = new google.maps.LatLng(
-			  // parseFloat(markerElem.getAttribute("lat")),
-			  // parseFloat(markerElem.getAttribute("lng"))
-		  // );
 
-		  // // Create content for marker on click 
-		  // var infowincontent = document.createElement("div");
-		    // infowincontent.className = "markerText";
-		    // var strong = document.createElement("strong");
-		    // strong.textContent = name;
-		    // infowincontent.appendChild(strong);
-		    // infowincontent.appendChild(document.createElement("br"));
+	//create markers --> not displaying marker? -need to debug-may have to do w/ path
+	// Change this depending on the name of your PHP or XML file
+	loadFile('db_UI/createMarkers.php', function(data) {
+	var xml = data.responseXML;//should have the array of markers created from php file
+	var markers = xml.documentElement.getElementsByTagName("marker");
+		Array.prototype.forEach.call(markers, function(markerElem) {
+		  var name = markerElem.getAttribute("name");
+		 // var pts = markerElem.getAttribute("pts");
+		  var type = markerElem.getAttribute("type");
+		  var point = new google.maps.LatLng(
+			  parseFloat(markerElem.getAttribute("lat")),
+			  parseFloat(markerElem.getAttribute("lng"))
+		  );
+
+		  // Create content for marker on click 
+		  var infowincontent = document.createElement("div");
+		    infowincontent.className = "markerText";
+		    var strong = document.createElement("strong");
+		    strong.textContent = name;
+		    infowincontent.appendChild(strong);
+		    infowincontent.appendChild(document.createElement("br"));
 			// var ptInt = document.createElement("text");
-			// ptInt.textContent = pts;
+			// ptInt.textContent = pts; --> may display battery level instead
 			// infowincontent.appendChild(ptInt);
 			// infowincontent.appendChild(document.createElement("br"));
-			// var position = document.createElement("text");
-			// position.textContent = point;
-			// infowincontent.appendChild(position);
-		  // // end of marker content//
+			var position = document.createElement("text");
+			position.textContent = point;
+			infowincontent.appendChild(position);
+		  // end of marker content//
 			
-			// var icon = customLabel[type] || {};
+			var icon = customLabel[type] || {};
 			
-			// var marker = new google.maps.Marker({
-				// map: map,
-				// position: point,
-				// label: icon.label
-			// });
+			var marker = new google.maps.Marker({
+				map: map,
+				position: point,
+				label: icon.label
+			});
 			
-			// marker.addListener("click", function() {
-				// infoWindow.setContent(infowincontent);
-				// infoWindow.open(map, marker);
-			// });
-		// });
-	// });			
+			marker.addListener("click", function() {
+				infoWindow.setContent(infowincontent);
+				infoWindow.open(map, marker);
+			});
+		});
+	});			
 }
 
 /* helper function to load xml file and return markers*/
@@ -445,6 +503,23 @@ function check_flight(){
 	xmlhttp.open("GET","db_UI/flight_status.php",true);//pass variables to php file
 	xmlhttp.send();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

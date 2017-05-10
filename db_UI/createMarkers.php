@@ -4,7 +4,7 @@
 	$host = $db['host'];
 	$user = $db['user'];
 	$pass = $db['pass'];
-	$homedb = $db['rover'];
+	$dronedb = $db['drone'];
 	/* Open a connection to a MySQL server */
 	$connection = mysqli_connect ($host, $user, $pass) or die('Not connected : ' . mysql_error());
 	
@@ -17,17 +17,14 @@
 	/*itterate through the database and select most recent time stamp, lat and long pts */
 	while($database = mysqli_fetch_array($all_database,MYSQLI_BOTH)){ //select only the drone db
 		/* Set markers only for the active rover tables */
-		if( (strcmp($database[0],"information_schema") != 0) & (strcmp($database[0],"mysql") !=0 ) & 
-				(strcmp($database[0],"performance_schema")!=0 ) & (strcmp($database[0],"phpmyadmin") != 0) &
-					(strcmp($database[0],$homedb) != 0)  ){//don't show default db or rover
+		if(strcmp($database[0],$dronedb) == 0 ){//search only the drones database
 			/* connect to new database */
-			$db_selected = mysqli_select_db($connection,$database[0]) or die ('Can\'t use db : ' . mysql_error());
-			$tableList = mysqli_query($connection,'SHOW TABLES') or die('cannot show tables');
-			
+			$db_selected = mysqli_select_db($connection,$database[0]) or die ('cannot access db : ' . mysql_error());
+			$droneList = mysqli_query($connection,'SHOW TABLES') or die('cannot show tables');
 			/* Access and iterates all the tables within current database */
-			while($table = mysqli_fetch_row($tableList)) {
+			while($table = mysqli_fetch_row($droneList)) {
 				/* Select most recent timestamp from each table in database */
-				$query = 'SELECT `loc_x`, `loc_y`,`pts` From '.$table[0].' ORDER by time DESC LIMIT 1';
+				$query = 'SELECT `loc_x`, `loc_y` From '.$table[0].' ORDER by time DESC LIMIT 1';
 				$result = mysqli_query($connection,$query) or die('Invalid query:');
 				
 				/* Iterate through the row, printing XML nodes for only recent/lastest timestamp */
@@ -35,7 +32,6 @@
 				/* Add to XML document node */
 				echo '<marker ';
 				echo 'name="' .$table[0] . '" ';
-				echo 'pts="' . $row['pts'] . '" ';
 				echo 'lat="' . $row['loc_x'] . '" ';
 				echo 'lng="' . $row['loc_y'] . '" ';
 				echo 'type="'. $database[0]. '" ';

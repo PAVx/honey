@@ -107,92 +107,44 @@ m = 0
 
 
 while(1):
-#    try: 
-        # Wait for the rising edge of a "clock tick"
-        # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
-        #time.sleep(0.5)
-        # Proceed assembling data in all channels
-        assemble_channels(m)        
-        print "."
-        # At the end of n samples, perform averaging and store to database
-        m = m + 1        
-        if m >= n:
-            m = 0
-            # TEST THE DOOR            
-            for drone in drones_ref:
-                # Get index for channel storage
-                j = drones_ref.index(drone)
-                for i in range(len(sensors_ref)):
-                    drone_data[j].s[i].avg_data = n_average(drone_data[j].s[i].data)
-                    drone_data[j].s[i].pts = drone_data[j].s[i].avg_data / 2
-                # Add entry to the appropriate queue to be moved to the cloud later
-                cloud_queue[j].append(drone_data[j])
-                # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
-                dbi.add_entry(db_host1,\
-                              drone_db_real,\
-                              drone,\
-                              drone_data[j].x,\
-                              drone_data[j].y,\
-                              drone_data[j].z,\
-                              drone_data[j].s)
-                              #n_average(channels[j].meas_val),\
-                              #n_average(channels[j].pts))        
 
-        # Wait for tick
-        # time.sleep(wait_time)
+    # Wait for the rising edge of a "clock tick"
+    # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
+    #time.sleep(0.5)
+    # Proceed assembling data in all channels
+    assemble_channels(m)        
+    print "."
+    # At the end of n samples, perform averaging and store to database
+    m = m + 1        
+    if m >= n:
+        m = 0
+        # TEST THE DOOR            
+        for drone in drones_ref:
+            # Get index for channel storage
+            j = drones_ref.index(drone)
+            for i in range(len(sensors_ref)):
+                drone_data[j].s[i].avg_data = n_average(drone_data[j].s[i].data)
+                drone_data[j].s[i].pts = drone_data[j].s[i].avg_data / 2
+            # Add entry to the appropriate queue to be moved to the cloud later
+            cloud_queue[j].append(drone_data[j])
+            # Add function: add_entry(inst_t, x, y, z, meas_val, pts)
+            dbi.add_entry(db_host1,\
+                          drone_db_real,\
+                          drone,\
+                          drone_data[j].x,\
+                          drone_data[j].y,\
+                          drone_data[j].z,\
+                          drone_data[j].s)
+                          #n_average(channels[j].meas_val),\
+                          #n_average(channels[j].pts))        
 
-    # Online data transfer
-        if online_flag:
-            try:
-            # Connect to the cloud database
-                db = MySQLdb.connect(host=db_host0, user=db_user, passwd=db_pass, db=ground_db)
-                cur = db.cursor()
-            except:
-                print "Could not store to the cloud. Check connection."
-                online_flag = False
-            #try:
-            #print cloud_queue
-            if(online_flag and cloud_queue):
-                for q in range(len(cloud_queue)):
-                    print "Current Queue Length: " + str(len(cloud_queue[q]))
-                    while(len(cloud_queue[q])):
-                        drone_queue = cloud_queue[q]
-                        print "From the cloud: " + str(drone_queue)
-                        queued_entry = drone_queue.pop(0)
-                        print "Popped entry: " + str(queued_entry)
-                        dbi.add_entry(db_host0,\
-                                      drone_db_real,\
-                                      drones_ref[q],\
-                                      queued_entry.x,\
-                                      queued_entry.y,\
-                                      queued_entry.z,\
-                                      queued_entry.s)
-                    print "Queue has been cleared!"
-            #except:
-                #print "Bruh you clearly did some wack ass shit and now it's not working you hoe"
+    # Wait for tick
+    # time.sleep(wait_time)
 
-    # Process escape
-#    except KeyboardInterrupt:
- #       GPIO.cleanup()
-        #delete the entire folder if it exists from a previous run
-  #      if os.path.exists("data"):
-   #         shutil.rmtree("data")
-        #make the data folder
-    #    dbi._make_folder("data")
-     #   for drone in drones_ref:
-      #      dbi._make_folder("data/" + drone)
-            #make the drone folders here
-       #     print "\n", drone
-        #    log = open("data/" + "/" + drone + "_log.csv", 'w')
-         #   print("File opened. Writing to file...")
-          #  dbi.write_all_entries(drone_db_real, drone, log)
-           # log.close()
-            #dbi.fetch_all_entries(drone, ch)
-            #dbi._exit(drone)
-       # print "\n ALL ENTRIES LISTED! Program closing."
-       # break
-
-##GPIO.cleanup()
+# Online data transfer
+    online_flag = db_queue.online_queue(online_flag, drone_queue, cloud_queue)
+ 
+GPIO.cleanup()
 ##dbi.fetch_all_entries("Instrument0_data")
 ##dbi._exit()
 

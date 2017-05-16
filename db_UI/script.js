@@ -21,7 +21,7 @@ function showTable(channel){
 		}
 	}
 	/*open and send new data inputs to php file*/
-	xmlhttp.open("GET","db_UI/FetchTable.php?data="+datab+"&ch="+chann,true);//pass variables to php file
+	xmlhttp.open("GET","FetchTable.php?data="+datab+"&ch="+chann,true);//pass variables to php file
 	xmlhttp.send();
 }
 
@@ -40,7 +40,7 @@ function visualizeData(){
         random = d3.randomNormal(5, 1),
         data = d3.range(n).map(random);
 
-    d3.json("db_UI/JSONData.json", function(error, json) {
+    d3.json("JSONData.json", function(error, json) {
         if(error) console.log("error reading data");
         console.log(json);  //Log output to console
 
@@ -117,7 +117,7 @@ function doWait() {}
 /* calls on the mapping html code in index.php*/
 function mapClick(){
 	var test= "Modified";
-	console.log(test);
+	//console.log(test);
 	//computes <div mapping>
 	$("#mapping").show();
 	visualData = 0; //disable visual data view
@@ -194,7 +194,7 @@ function check_scan(a,b){
 		}
 	}
 	/*open and send new data inputs to php file*/
-	xmlhttp.open("GET","db_UI/ScanCheck.php?x1="+x1+"&x2="+x2+"&y1="+y1+"&y2="+y2,true);//pass variables to php file
+	xmlhttp.open("GET","ScanCheck.php?x1="+x1+"&x2="+x2+"&y1="+y1+"&y2="+y2,true);//pass variables to php file
 	xmlhttp.send();
 }
 
@@ -203,24 +203,11 @@ var sw;
 var flag = 0;
 var heatmap;
 var num_drones = 1;
-var hm_data = new Array();
+var hm_data;
+var hmap_exists = false;
+hm_data = new Array();
 hm_refresh(30);
-//~ hm_data = [
-   //~ [37.006, -122.0507],
-   //~ [37.006, -122.0505],
-   //~ [37.006, -122.0503],
-   //~ [37.006, -122.0501],
-   //~ [37.006, -122.0499],
-   //~ [37.006, -122.0497],
-   //~ [37.006, -122.0495],
-   //~ [37.008, -122.0507],
-   //~ [37.008, -122.0505],
-   //~ [37.008, -122.0503],
-   //~ [37.008, -122.0501],
-   //~ [37.008, -122.0499],
-   //~ [37.008, -122.0497],
-   //~ [37.008, -122.0495]
-//~ ];
+
 function scan_Map(values) {
 	console.log("scanning");//for debugging
 	var id = document.getElementById(values);
@@ -271,13 +258,24 @@ function scan_Map(values) {
 		}
 		//check if ne and sw is null, if so set up default
 		check_scan(ne, sw );
-   }
-   var heatmap = new google.maps.visualization.HeatmapLayer({
-        data: hm_draw(),
-        map: map
-    });	
-  
+   } 
 }
+//Toggles the heatmap on and off
+function toggle_hmap() {
+	//Check to see if the heatmap has been initliazed already
+	if(!hmap_exists) {
+		//Create the heatmap if not initialized
+		heatmap = new google.maps.visualization.HeatmapLayer({
+        	data: hm_draw(),
+        	map: map
+    	});	
+    	hmap_exists = true;
+	}
+	else {
+		heatmap.setMap(heatmap.getMap() ? null : map);
+	}
+}
+
 var tdata;
 //Reads the database, adding any entries whose score is above threshold to the heatmap table
 function hm_refresh(threshold) {
@@ -289,29 +287,28 @@ function hm_refresh(threshold) {
 	}	
         xmlhttp.onreadystatechange = function() {
         	if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			tdata = xmlhttp.responseText.split(" ");
-			console.log(tdata);
-			tdata.forEach(function(element) {
-			   	hm_data.push(parseFloat(element));
-			});
-			console.log(hm_data);
+        		//Parse the returned string of DB values from the php
+				tdata = xmlhttp.responseText.split(" ");
+				var d_arr = tdata.slice(0, -1); 
+				d_arr.forEach(function(element) {
+				   	hm_data.push(parseFloat(element));
+				});
 		}
 	}
-	xmlhttp.open("GET","db_UI/HeatMap.php?data=jays&n=1&th="+threshold,true);//pass variables to php file    
-       	xmlhttp.send();
+	xmlhttp.open("GET","HeatMap.php?data=jays&n="+num_drones+"&th="+threshold,true);//pass variables to php file    
+    xmlhttp.send();
 }
 
 //uses the heatmap table to create data points for the heatmap
 function hm_draw() {
-    var heatmap = new Array();
+    var heatmap_arr = new Array();
     var i = 0;
-    do {
-        heatmap.push(new google.maps.LatLng(hm_data[i], hm_data[i+1]));
-        i += 2;
-    }
-    while(i < hm_data.length-1);
-    console.log("heatmap"+heatmap);
-    return heatmap;
+	do {
+    	heatmap_arr.push(new google.maps.LatLng(hm_data[i], hm_data[i+1]));
+    	i += 2;
+	}
+	while(i < hm_data.length-1);
+	return heatmap_arr;
 }
 
       // Show the new coordinates for the rectangle in an info window.
@@ -353,7 +350,7 @@ function initMap() {
 
 	//create markers --> not displaying marker? -need to debug-may have to do w/ path
 	// Change this depending on the name of your PHP or XML file
-	loadFile('db_UI/createMarkers.php', function(data) {
+	loadFile('createMarkers.php', function(data) {
 	var xml = data.responseXML;//should have the array of markers created from php file
 	var markers = xml.documentElement.getElementsByTagName("marker");
 		Array.prototype.forEach.call(markers, function(markerElem) {
@@ -394,7 +391,7 @@ function initMap() {
 				infoWindow.open(map, marker);
 			});
 		});
-	});			
+	});
 }
 
 /* helper function to load xml file and return markers*/
@@ -478,7 +475,7 @@ function LoadWeather(){
 	curr_state = document.getElementById("state").value;
 	var curr_display = "show";
 	/*open and send new data inputs to php file*/
-	xmlhttp.open("GET","db_UI/weather_getInfo.php?display="+curr_display+"&state="+curr_state+"&city="+curr_city,true);//pass variables to php file
+	xmlhttp.open("GET","weather_getInfo.php?display="+curr_display+"&state="+curr_state+"&city="+curr_city,true);//pass variables to php file
 	xmlhttp.send();
 }
 
@@ -500,23 +497,9 @@ function check_flight(){
 		}
 	}
 	/*open and send new data inputs to php file*/
-	xmlhttp.open("GET","db_UI/flight_status.php",true);//pass variables to php file
+	xmlhttp.open("GET","flight_status.php",true);//pass variables to php file
 	xmlhttp.send();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

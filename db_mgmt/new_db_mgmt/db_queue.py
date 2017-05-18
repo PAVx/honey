@@ -29,8 +29,13 @@ db_host0 = config.get(_db_info, 'host0')
 db_host1 = config.get(_db_info, 'host1')
 db_user = config.get(_db_info, 'user')
 db_pass = creds.db_pass
+# Load identifiers for ground and drones
+ground_db = config.get(_identifiers, 'rover')
+drone_db = config.get(_identifiers, 'drone')
+drone_db_real = drone_db + "s"
 
-def online_queue(online_flag, drone_queue, cloud_queue):
+
+def online_queue(online_flag, cloud_queue, drones_ref):
     if online_flag:
         try:
         # Connect to the cloud database

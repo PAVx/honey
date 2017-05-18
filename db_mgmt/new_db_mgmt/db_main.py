@@ -6,6 +6,7 @@ import MySQLdb
 import dbi
 import dbz
 from dbs import drone_entry
+import db_queue
 from random import randint
 import ConfigParser
 import time
@@ -142,7 +143,7 @@ while(1):
     # time.sleep(wait_time)
 
 # Online data transfer
-    online_flag = db_queue.online_queue(online_flag, drone_queue, cloud_queue)
+    online_flag = db_queue.online_queue(online_flag, cloud_queue, drones_ref)
  
 GPIO.cleanup()
 ##dbi.fetch_all_entries("Instrument0_data")

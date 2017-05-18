@@ -25,25 +25,21 @@ function showTable(channel){
 	xmlhttp.send();
 }
 
-function visualizeData(){
+var vis_data = new Array();
+vis_data = vis_getdata();
+function visualizeData() {	
     //Space the graphs will occupy (originally width: 980, height: 500)
-    var svg_width = 653
-    var svg_height = 333
+    var svg_width = 653;
+    var svg_height = 333;
 
     //Specify how much padding on each side of the SVG (to look cleaner)
-    var margin = {top: 20, right: 20, bottom: 20, left: 40},
-        width = svg_width - margin.left - margin.right,
-        height = svg_height - margin.top - margin.bottom;
+    var margin = {top: 20, right: 20, bottom: 20, left: 40};
+    var width = svg_width - margin.left - margin.right;
+    var height = svg_height - margin.top - margin.bottom;
 
     var count;
-    var n = 40,
-        random = d3.randomNormal(5, 1),
-        data = d3.range(n).map(random);
-
-    d3.json("JSONData.json", function(error, json) {
-        if(error) console.log("error reading data");
-        console.log(json);  //Log output to console
-
+    var n = 40;
+    var data = d3.map(vis_data);
 
         //Create the SVG element in which the graph will be placed.
         var svg = d3.select("#output").append("svg")
@@ -57,18 +53,14 @@ function visualizeData(){
             .domain([0, n - 1]) //values that x can be
             .range([0, width]); //maps x values to the total width of svg
         var y = d3.scaleLinear()
-            .domain([0, 10]) //values that y can be
+            .domain([0, 100]) //values that y can be
             .range([height - (2*(margin.top+margin.bottom)), 0]);
 
+		//return scaled values of the data
         //"i" is the index of the data (time) and "d" is the associated data
         var line = d3.line()
             .x(function(d, i) { return x(i); })
             .y(function(d, i) { return y(d); });
-
-        //return scaled values of the data
-        var line2 = d3.line()
-            .x(function(d, i) { return x(d.time); })
-            .y(function(d, i) { return y(d.sensor0); });
 
         //Set clip region (how far the line will be drawn)
         g.append("defs").append("clipPath")
@@ -94,15 +86,9 @@ function visualizeData(){
             //draw the line in the clip path
             .attr("clip-path", "url(#clip)")
             .append("path")
-            .datum(json)
+            .datum(vis_data)
             .attr("class", "line")
-            .transition()
-            .duration(500)
-            .ease(d3.easeLinear)
-            .attr("d", line2)
-            .attr("transform", null);
-	
-    });	
+            .attr("d", line);	
 }
 
 /* Need to clear the page before loading new info/text */
@@ -206,7 +192,7 @@ var num_drones = 1;
 var hm_data;
 var hmap_exists = false;
 hm_data = new Array();
-hm_refresh(30);
+//hm_refresh(30);
 
 function scan_Map(values) {
 	console.log("scanning");//for debugging
@@ -262,6 +248,7 @@ function scan_Map(values) {
 }
 //Toggles the heatmap on and off
 function toggle_hmap() {
+	hm_refresh(30);
 	//Check to see if the heatmap has been initliazed already
 	if(!hmap_exists) {
 		//Create the heatmap if not initialized
@@ -297,6 +284,31 @@ function hm_refresh(threshold) {
 	}
 	xmlhttp.open("GET","HeatMap.php?data=jays&n="+num_drones+"&th="+threshold,true);//pass variables to php file    
     xmlhttp.send();
+}
+
+var vdata;
+function vis_getdata() {
+	var xmlhttp;
+	var vis_data = new Array();
+	if (window.XMLHttpRequest) {// code for newer browsers			
+		xmlhttp = new XMLHttpRequest();
+	} else {// code for IE6, IE5
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlhttp.onreadystatechange = function() {
+		if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			//Parse the returned string of data values
+			vdata  = xmlhttp.responseText.split(" ");
+			var v_arr = vdata.slice(0, -1);
+			v_arr.forEach(function(element) {
+				vis_data.push(parseFloat(element));
+			});
+		}
+	}
+	//Once it works, make this more dynamic
+	xmlhttp.open("GET", "visualization.php?db=jays&tbl=jay0&sen=sensor0_data&n=8");
+	xmlhttp.send();
+	return vis_data;
 }
 
 //uses the heatmap table to create data points for the heatmap

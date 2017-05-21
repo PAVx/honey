@@ -151,10 +151,12 @@ m = 0
 
 # THREAD FUNCTIONS
 def thread_poll_status(void):
+    print("POLLING STATUS")
     new_data_flag = assemble_channels(m)
     time.sleep(wait_time)
 
 def thread_poll_profile(void):
+    print("POLLING PROFILE")
     new_settings_flag = db_sync.db_update(db_host0, db_host1, ground_db)
     time.sleep(2)
 

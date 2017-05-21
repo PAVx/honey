@@ -7,6 +7,7 @@ import dbi
 import dbz
 from dbs import drone_entry
 import db_queue
+import db_sync
 from random import randint
 import ConfigParser
 import time
@@ -68,6 +69,7 @@ cloud_queue = []
 for drone in drones_ref:
     entry_queue = []
     cloud_queue.append(entry_queue)
+new_settings_flag = False
 
 # Init poll function from dbz
 dbz.init_poll()
@@ -108,7 +110,8 @@ m = 0
 
 
 while(1):
-
+    if(new_settings_flag):
+        print "MAKE CTRL PACKET LMAO XDDD~~~~~~"
     # Wait for the rising edge of a "clock tick"
     # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
     #time.sleep(0.5)
@@ -144,6 +147,7 @@ while(1):
 
 # Online data transfer
     online_flag = db_queue.online_queue(online_flag, cloud_queue, drones_ref)
+    new_settings_flag = db_sync.db_update(db_host0, db_host1, ground_db)
  
 GPIO.cleanup()
 ##dbi.fetch_all_entries("Instrument0_data")

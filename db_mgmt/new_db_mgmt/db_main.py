@@ -163,6 +163,7 @@ def thread_poll_profile(void):
 
 class myThread (threading.Thread):
     def __init__(self, threadID, name):
+        print name, " thread intializing."
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name

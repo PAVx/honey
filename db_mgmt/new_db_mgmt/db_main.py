@@ -160,9 +160,25 @@ def thread_poll_profile(void):
     new_settings_flag = db_sync.db_update(db_host0, db_host1, ground_db)
     time.sleep(2)
 
+class myThread (threading.Thread):
+    def __init__(self, threadID, name):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+    def run(self):
+        print "Starting " + self.name
+        if self.threadID == 1:
+            thread_poll_status()
+        if self.threadID == 2:
+            thread_poll_profile()
+        print "Exiting " + self.name
+
 # INITIALIZE THREADS
-thread.start_new_thread(thread_poll_status, )
-thread.start_new_thread(thread_poll_profile, )
+thread1 = myThread(1, "poll_status")
+thread2 = myThread(1, "poll_profile")
+
+thread1.start()
+thread2.start()
 
 
 

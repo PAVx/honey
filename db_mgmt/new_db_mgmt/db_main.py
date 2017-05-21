@@ -2,12 +2,17 @@
 # filename: db_main.py
 # Core database program
 
+# TOOLS
 import MySQLdb
+
+# PROGRAMS
 import dbi
 import dbz
 from dbs import drone_entry
 import db_queue
 import db_sync
+
+# UTILITIES
 from random import randint
 import ConfigParser
 import time
@@ -15,6 +20,7 @@ import RPi.GPIO as GPIO
 import os
 import shutil
 import creds
+import thread
 
 # Configuration
 config_file_name = "dbi_conf"
@@ -69,23 +75,33 @@ cloud_queue = []
 for drone in drones_ref:
     entry_queue = []
     cloud_queue.append(entry_queue)
+
+# POLL FLAGS
 new_settings_flag = False
+new_data_flag = False
 
 # Init poll function from dbz
 dbz.init_poll()
  
 # Data Construction Functions
 def assemble_sensor_data(d, i):
-    while(1):
+    n = 10
+    # Make 10 attempts
+    while(n):
+        n -= 1
         the_packet = dbz.poll(i)
         if the_packet:
             if the_packet.status_flag:
                 drone_data[d] = the_packet.entry
+                return True
                 break
+    return False
 
 def assemble_channels(i):
+    new_data = False
     for k in range(num_drones):
-        assemble_sensor_data(k, i)
+        new_settings_data &= assemble_sensor_data(k, i)
+    return new_data
 
 def fake_assemble_sensor_data(d, i):
     drone_data[d].t = randint(1, 100)
@@ -104,8 +120,7 @@ def n_average(lst):
     return (total/len(lst))
         
 def receive_status_packet(void):
-    # Proceed assembling data in all channels
-    assemble_channels(m)        
+    # Proceed assembling data in all channels       
     print "."
     # At the end of n samples, perform averaging and store to database
     m = m + 1        
@@ -134,6 +149,19 @@ def receive_status_packet(void):
 # Incrementer for the average counter
 m = 0
 
+# THREAD FUNCTIONS
+def thread_poll_status(void):
+    new_data_flag = assemble_channels(m)
+    time.sleep(wait_time)
+
+def thread_poll_profile(void):
+    new_settings_flag = db_sync.db_update(db_host0, db_host1, ground_db)
+    time.sleep(2)
+
+# INITIALIZE THREADS
+thread.start_new_thread(thread_poll_status, (,))
+thread.start_new_thread(thread_poll_profile, (,))
+
 
 
 while(1):
@@ -142,15 +170,22 @@ while(1):
     # Wait for the rising edge of a "clock tick"
     # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
     #time.sleep(0.5)
-    receive_status_packet()
+
+    # RESPONSES
+    if new_data_flag:
+        receive_status_packet()
+        new_data_flag = False
+    if new_settings_flag:
+        pass
+        new_settings_flag = False
+        # Send Control Packets
 
     # Wait for tick
     # time.sleep(wait_time)
 
 # Online data transfer
     online_flag = db_queue.online_queue(online_flag, cloud_queue, drones_ref)
-    new_settings_flag = db_sync.db_update(db_host0, db_host1, ground_db)
- 
+
 GPIO.cleanup()
 ##dbi.fetch_all_entries("Instrument0_data")
 ##dbi._exit()

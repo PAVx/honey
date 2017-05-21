@@ -103,18 +103,7 @@ def n_average(lst):
         total += val
     return (total/len(lst))
         
-        
-# Incrementer for the average counter
-m = 0
-
-
-
-while(1):
-    if(new_settings_flag):
-        print "MAKE CTRL PACKET LMAO XDDD~~~~~~"
-    # Wait for the rising edge of a "clock tick"
-    # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
-    #time.sleep(0.5)
+def receive_status_packet(void):
     # Proceed assembling data in all channels
     assemble_channels(m)        
     print "."
@@ -140,7 +129,20 @@ while(1):
                           drone_data[j].z,\
                           drone_data[j].s)
                           #n_average(channels[j].meas_val),\
-                          #n_average(channels[j].pts))        
+                          #n_average(channels[j].pts)) 
+        
+# Incrementer for the average counter
+m = 0
+
+
+
+while(1):
+    if(new_settings_flag):
+        print "MAKE CTRL PACKET LMAO XDDD~~~~~~"
+    # Wait for the rising edge of a "clock tick"
+    # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
+    #time.sleep(0.5)
+    receive_status_packet()
 
     # Wait for tick
     # time.sleep(wait_time)

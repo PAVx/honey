@@ -21,6 +21,7 @@ import os
 import shutil
 import creds
 import thread
+import threading
 
 # Configuration
 config_file_name = "dbi_conf"
@@ -175,7 +176,7 @@ class myThread (threading.Thread):
 
 # INITIALIZE THREADS
 thread1 = myThread(1, "poll_status")
-thread2 = myThread(1, "poll_profile")
+thread2 = myThread(2, "poll_profile")
 
 thread1.start()
 thread2.start()

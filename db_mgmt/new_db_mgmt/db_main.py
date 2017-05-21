@@ -159,8 +159,8 @@ def thread_poll_profile(void):
     time.sleep(2)
 
 # INITIALIZE THREADS
-thread.start_new_thread(thread_poll_status, (,))
-thread.start_new_thread(thread_poll_profile, (,))
+thread.start_new_thread(thread_poll_status, )
+thread.start_new_thread(thread_poll_profile, )
 
 
 

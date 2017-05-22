@@ -21,10 +21,10 @@ num_samples = int(config.get(_core_variables, 'n_samples'))
 
 #Initialize packet reading and writing parameters
 #Data from sensors is currently 64 bits (8 bytes)
-PACKET_LENGTH = 38
+PACKET_LENGTH = 30
 FREQUENCY = 5
 waittime = 1 / FREQUENCY
-PORT = '/dev/ttyUSB1'
+PORT = '/dev/ttyUSB0'
 BAUD = 9600
 ser = serial.Serial(PORT, BAUD)
 xbee = XBee(ser)
@@ -38,6 +38,9 @@ class packet():
     src = 0
     dest = 0
     entry = drone_entry()
+    roll = 0
+    pitch = 0
+    batt = 0
 
 def init_poll():
     # Construct the door
@@ -47,7 +50,8 @@ def init_poll():
 def poll(i):
     data_rec = False
     try:
-        data = ser.read(38)
+        data = ser.read(PACKET_LENGTH)
+        print(data)
         data_rec = True
     except:
         pass
@@ -69,16 +73,16 @@ def poll(i):
 #Checks if status packet is received. Success = 1, Failure = 0
 def check_valid(packet_start):
     if(packet_start[0] != 1):
-        print("Invalid SOH")
+        #print("Invalid SOH")
         return False
     if(packet_start[1] != 2):
-        print("Invalid STX")
+        #print("Invalid STX")
         return False
     if(packet_start[2] != 1):
-        print("Invalid Status Packet")
+        #print("Invalid Status Packet")
         return False
     if(packet_start[4] != 170):
-        print("Invalid Dest")
+        #print("Invalid Dest")
         return False
     return True
 
@@ -90,19 +94,38 @@ def parse(data, i):
     # Set flag to be true automatically as this is called after a check_valid
     pac.status_flag = True
     # Populate src and dest
-    pac.src = (data[4])
-    pac.dest = (data[5])
+    pac.src = (data[3])
+    pac.dest = (data[4])
     # Parse data
-    pac.entry.x = parse_loc(data[5:13])
+    pac.entry.y = parse_loc(data[5:9])
     print "x=" + str(pac.entry.x)
-    pac.entry.y = parse_loc(data[13:21])
+    pac.entry.x = parse_loc(data[9:13])
     print "y=" + str(pac.entry.y)
-    pac.entry.z = 0
-    pac.entry.time = parse_loc(data[21:29])
-    pac.entry.s[0].data[i] = parse_loc(data[29:37])
+    pac.entry.time = parse_dub(data[13:21])
+    pac.entry.z = parse_int(data[21:23])
+    print "z=" + str(pac.entry.z)
+    pac.roll = parse_int(data[23:25])
+    pac.pitch = parse_int(data[25:27])
+    pac.batt = parse_int(data[27])
+    #pac.entry.s[0].data[i] = parse_dub(data[21:29])
+    pac.entry.s[0].data[i] = data[28]
+    batt = data[27]
+    print "batt=" + str(pac.batt)
+    print "##BATTERY LEVEL##:", str(batt)
     print "data for ", i, ": ", pac.entry.s[0].data[i]
     # Return packet
     return pac
+
+def parse_dub(byte_array):
+    #print "byte_array: ", byte_array
+    hex_string = ""
+    for i in range(len(byte_array)):
+        #print "iter: ", i
+        hex_val = hex(byte_array[i])
+        hex_string += hex_val[2:].zfill(2)
+    print("DUB: 0x"+hex_string)
+    parsed = struct.unpack('!d', hex_string.decode('hex'))[0]
+    return parsed
 
 def parse_loc(byte_array):
     print "byte_array: ", byte_array
@@ -112,8 +135,33 @@ def parse_loc(byte_array):
         hex_val = hex(byte_array[i])
         hex_string += hex_val[2:].zfill(2)
     print("0x"+hex_string)
-    parsed = struct.unpack('!d', hex_string.decode('hex'))[0]
+    parsed = struct.unpack('!f', hex_string.decode('hex'))[0]
     return parsed
+
+def parse_int(byte_array):
+    print "byte_array: ", byte_array
+    hex_string = ""
+    l = 0
+    try:
+        l = len(byte_array)
+    except TypeError:
+        return byte_array
+    for i in range(l):
+        print "iter: ", i
+        hex_val = hex(byte_array[l-i-1])
+        hex_string += hex_val[2:].zfill(2)
+    print("0x"+hex_string)
+    parsed = struct.unpack('H', hex_string.decode('hex'))[0]
+    return parsed
+##    data_sum = 0
+##    l = 0
+##    try:
+##        l = len(byte_array)
+##    except:
+##        len = 1
+##    for i in range(l):
+##        data_sum += (byte_array[i] * pow(2, 8*(l-(i+1))))
+        
 
 # MAIN FUNCTION: takes in sample iterationreturns false OR the packet class
 def get_packet(i):

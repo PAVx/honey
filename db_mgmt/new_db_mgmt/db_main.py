@@ -1,17 +1,22 @@
 #!/usr/bin/python
 # filename: db_main.py
 # Core database program
-
+print ("hi")
 # TOOLS
 import MySQLdb
+print ("hi")
 
 # PROGRAMS
 import dbi
+print ("dbi")
 import dbz
+print ("dbz")
 from dbs import drone_entry
+print ("dbs")
 import db_queue
+print ("db_queue")
 import db_sync
-
+print ("db_sync")
 # UTILITIES
 from random import randint
 import ConfigParser
@@ -20,9 +25,9 @@ import RPi.GPIO as GPIO
 import os
 import shutil
 import creds
-import thread
 import threading
 
+print ("hi")
 # Configuration
 config_file_name = "dbi_conf"
 config = ConfigParser.ConfigParser()
@@ -77,10 +82,6 @@ for drone in drones_ref:
     entry_queue = []
     cloud_queue.append(entry_queue)
 
-# POLL FLAGS
-new_settings_flag = False
-new_data_flag = False
-
 # Init poll function from dbz
 dbz.init_poll()
  
@@ -89,6 +90,7 @@ def assemble_sensor_data(d, i):
     n = 10
     # Make 10 attempts
     while(n):
+        print i, "-", n
         n -= 1
         the_packet = dbz.poll(i)
         if the_packet:
@@ -101,7 +103,7 @@ def assemble_sensor_data(d, i):
 def assemble_channels(i):
     new_data = False
     for k in range(num_drones):
-        new_settings_data &= assemble_sensor_data(k, i)
+        new_data |= assemble_sensor_data(k, i)
     return new_data
 
 def fake_assemble_sensor_data(d, i):
@@ -120,7 +122,8 @@ def n_average(lst):
         total += val
     return (total/len(lst))
         
-def receive_status_packet(void):
+def receive_status_packet():
+    global m,n
     # Proceed assembling data in all channels       
     print "."
     # At the end of n samples, perform averaging and store to database
@@ -150,16 +153,56 @@ def receive_status_packet(void):
 # Incrementer for the average counter
 m = 0
 
-# THREAD FUNCTIONS
-def thread_poll_status(void):
-    print("POLLING STATUS")
-    new_data_flag = assemble_channels(m)
-    time.sleep(wait_time)
+# POLL FLAGS
+new_settings_flag = False
+new_data_flag = False
+print new_settings_flag," ",new_data_flag
+# THREAD VARIABLES
+thread_killah = False
 
-def thread_poll_profile(void):
-    print("POLLING PROFILE")
-    new_settings_flag = db_sync.db_update(db_host0, db_host1, ground_db)
-    time.sleep(2)
+# THREAD FUNCTIONS
+def thread_poll_status():
+    global new_data_flag
+    while(1):
+        if thread_killah:
+            break
+        print("POLLING STATUS")
+        new_data_flag = assemble_channels(m)
+        time.sleep(2)
+        # Online data transfer
+
+def thread_manage_poll_status():
+    pass
+
+def thread_poll_profile():
+    while(1):
+        if thread_killah:
+            break
+        print("POLLING PROFILE")
+        new_settings_flag = db_sync.db_update(db_host0, db_host1, ground_db)
+        time.sleep(2)
+
+def thread_response_chain():
+    global new_data_flag, new_settings_flag
+    while(1):
+        time.sleep(1)
+        if thread_killah:
+            break
+        print "R: ", new_data_flag, " ", new_settings_flag
+        # RESPONSES
+        if new_data_flag:
+            print "HEY!@#@#@#FDFDF@FEAFDFA#$@_$@#+$@#_$)??>?ASD<F>A<SD>?!?!!"
+            receive_status_packet()
+            new_data_flag = False
+        if new_settings_flag:
+            pass
+            new_settings_flag = False
+            # Send Control Packets
+
+        # Wait for tick
+        # time.sleep(wait_time)
+
+
 
 class myThread (threading.Thread):
     def __init__(self, threadID, name):
@@ -173,39 +216,34 @@ class myThread (threading.Thread):
             thread_poll_status()
         if self.threadID == 2:
             thread_poll_profile()
+        if self.threadID == 3:
+            thread_response_chain()
         print "Exiting " + self.name
+    def stop(self):
+        self._stop_event.set()
+    def stopped(self):
+        return self._stop_event.is_set()
+
 
 # INITIALIZE THREADS
 thread1 = myThread(1, "poll_status")
 thread2 = myThread(2, "poll_profile")
+thread3 = myThread(3, "response_chain")
 
-thread1.start()
 thread2.start()
-
-
+thread1.start()
+thread3.start()
 
 while(1):
-    if(new_settings_flag):
-        print "MAKE CTRL PACKET LMAO XDDD~~~~~~"
-    # Wait for the rising edge of a "clock tick"
-    # GPIO.wait_for_edge(CLOCK_IN, GPIO.RISING)
-    #time.sleep(0.5)
+    try:
+        while(1):
+            online_flag = db_queue.online_queue(online_flag, cloud_queue, drones_ref)
+    except KeyboardInterrupt:
+        thread_killah = True
+        break;
 
-    # RESPONSES
-    if new_data_flag:
-        receive_status_packet()
-        new_data_flag = False
-    if new_settings_flag:
-        pass
-        new_settings_flag = False
-        # Send Control Packets
 
-    # Wait for tick
-    # time.sleep(wait_time)
-
-# Online data transfer
-    online_flag = db_queue.online_queue(online_flag, cloud_queue, drones_ref)
-
+print "WTF"
 GPIO.cleanup()
 ##dbi.fetch_all_entries("Instrument0_data")
 ##dbi._exit()

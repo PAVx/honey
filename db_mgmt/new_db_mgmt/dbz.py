@@ -51,7 +51,7 @@ def poll(i):
     data_rec = False
     try:
         data = ser.read(PACKET_LENGTH)
-        print(data)
+        #print(data)
         data_rec = True
     except:
         pass
@@ -98,9 +98,9 @@ def parse(data, i):
     pac.dest = (data[4])
     # Parse data
     pac.entry.y = parse_loc(data[5:9])
-    print "x=" + str(pac.entry.x)
+    print "x=" + str(pac.entry.y)
     pac.entry.x = parse_loc(data[9:13])
-    print "y=" + str(pac.entry.y)
+    print "y=" + str(pac.entry.x)
     pac.entry.time = parse_dub(data[13:21])
     pac.entry.z = parse_int(data[21:23])
     print "z=" + str(pac.entry.z)
@@ -123,7 +123,7 @@ def parse_dub(byte_array):
         #print "iter: ", i
         hex_val = hex(byte_array[i])
         hex_string += hex_val[2:].zfill(2)
-    print("DUB: 0x"+hex_string)
+    #print("DUB: 0x"+hex_string)
     parsed = struct.unpack('!d', hex_string.decode('hex'))[0]
     return parsed
 
@@ -131,15 +131,15 @@ def parse_loc(byte_array):
     print "byte_array: ", byte_array
     hex_string = ""
     for i in range(len(byte_array)):
-        print "iter: ", i
+        #print "iter: ", i
         hex_val = hex(byte_array[i])
         hex_string += hex_val[2:].zfill(2)
-    print("0x"+hex_string)
+    #print("0x"+hex_string)
     parsed = struct.unpack('!f', hex_string.decode('hex'))[0]
     return parsed
 
 def parse_int(byte_array):
-    print "byte_array: ", byte_array
+    #print "byte_array: ", byte_array
     hex_string = ""
     l = 0
     try:
@@ -147,10 +147,10 @@ def parse_int(byte_array):
     except TypeError:
         return byte_array
     for i in range(l):
-        print "iter: ", i
+        #print "iter: ", i
         hex_val = hex(byte_array[l-i-1])
         hex_string += hex_val[2:].zfill(2)
-    print("0x"+hex_string)
+    #print("0x"+hex_string)
     parsed = struct.unpack('H', hex_string.decode('hex'))[0]
     return parsed
 ##    data_sum = 0

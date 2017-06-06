@@ -168,7 +168,7 @@ def thread_poll_status():
             break
         print("POLLING STATUS")
         new_data_flag = assemble_channels(m)
-        time.sleep(2)
+        #time.sleep(0.1)
         # Online data transfer
 
 def thread_manage_poll_status():
@@ -185,13 +185,13 @@ def thread_poll_profile():
 def thread_response_chain():
     global new_data_flag, new_settings_flag
     while(1):
-        time.sleep(1)
+        #time.sleep(0.1)
         if thread_killah:
             break
-        print "R: ", new_data_flag, " ", new_settings_flag
+        # print "R: ", new_data_flag, " ", new_settings_flag
         # RESPONSES
         if new_data_flag:
-            print "HEY!@#@#@#FDFDF@FEAFDFA#$@_$@#+$@#_$)??>?ASD<F>A<SD>?!?!!"
+            print "@@@@@@@@@@@ DATA DETECTED @@@@@@@@@@@"
             receive_status_packet()
             new_data_flag = False
         if new_settings_flag:
@@ -220,6 +220,7 @@ class myThread (threading.Thread):
             thread_response_chain()
         print "Exiting " + self.name
     def stop(self):
+	print "Killing " + self.name + "..."
         self._stop_event.set()
     def stopped(self):
         return self._stop_event.is_set()
@@ -244,6 +245,10 @@ while(1):
 
 
 print "WTF"
+thread1.stop()
+thread2.stop()
+thread3.stop()
+
 GPIO.cleanup()
 ##dbi.fetch_all_entries("Instrument0_data")
 ##dbi._exit()

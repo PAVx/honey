@@ -20,7 +20,8 @@ config = ConfigParser.ConfigParser()
 config.readfp(open(r'dbi_conf'))
 _db_info = 'DB_MASTER_INFO'
 _inst_conf = 'CORE_VARIABLES'
-db_host = config.get(_db_info, 'host')
+db_host0 = config.get(_db_info, 'host0')
+db_host1 = config.get(_db_info, 'host1')
 db_user = config.get(_db_info, 'user')
 db_pass = creds.db_pass
 db_inst = config.get(_db_info, 'dbin')
@@ -34,50 +35,64 @@ for i in range(num_sensors):
     sensors_ref.append("sensor" + str(i))
 print("Configuration complete!\n")
 
+online_flag = True
+
 # Initialize the database object and cursor
-db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass)
-cur = db.cursor()
-
+try:
+    db = MySQLdb.connect(host=db_host0, user=db_user, passwd=db_pass)
+    cur = db.cursor()
+except:
+    online_flag = False
+    
 # Add entry function
-def add_entry(target_db, target_t, x, y, z, sensordata_list, sensorpts_list):
-        # Point to correct database
-        db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=target_db)
-        cur = db.cursor()
-        #print("Adding entry... ")
-        
-        # Get time
-        ts = time.time()
-        timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        
-        # Build query
-        sensor_str = ""
-        add_data = (
-                "INSERT INTO `" + target_t + "`(`time`, `loc_x`, `loc_y`, `loc_z`, "
-                )
-        second_half = "VALUES (%s, %s, %s, %s, "
-        for sensor in sensors_ref:
-                sensor_str =  sensor_str + "`" + sensor + "_data" + "`, `" + sensor + "_pts" + "`"
-                second_half = second_half + "%s, %s"
-                if not(sensors_ref.index(sensor) == (len(sensors_ref) - 1)):
-                        sensor_str = sensor_str + ", "
-                        second_half = second_half + ", "
-                else:
-                        sensor_str = sensor_str + ")"
-                        second_half = second_half + ")"
-        add_data = add_data + sensor_str + second_half
+def add_entry(db_host, target_db, target_t, x, y, z, sensen):
+	try:
+        	# Point to correct database
+	        db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=target_db)
+	        cur = db.cursor()
+        	#print("Adding entry... ")
 
-        # Assemble and insert data
-        value_data = (timestamp, x, y, z)
-        # Create measurement value and points part of argument
-        for y in range(len(sensors_ref)):
-                value_data = value_data + (sensordata_list[y], sensorpts_list[y])
-        #print(add_data)
-        #print(value_data)
+                # Assemble lists
+                sensordata_list = []
+                sensorpts_list = []
+                
+        	# Get time
+        	ts = time.time()
+        	timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        
+	        # Build query
+	        sensor_str = ""
+	        add_data = (
+	                "INSERT INTO `" + target_t + "`(`time`, `loc_x`, `loc_y`, `loc_z`, "
+	                )
+	        second_half = "VALUES (%s, %s, %s, %s, "
+	        for sensor in sensors_ref:
+                        sensordata_list.append(sensen[sensors_ref.index(sensor)].avg_data)
+                        sensorpts_list.append(sensen[sensors_ref.index(sensor)].avg_data)
+	                sensor_str =  sensor_str + "`" + sensor + "_data" + "`, `" + sensor + "_pts" + "`"
+	                second_half = second_half + "%s, %s"
+	                if not(sensors_ref.index(sensor) == (len(sensors_ref) - 1)):
+	                        sensor_str = sensor_str + ", "
+	                        second_half = second_half + ", "
+	                else:
+	                        sensor_str = sensor_str + ")"
+	                        second_half = second_half + ")"
+	        add_data = add_data + sensor_str + second_half
+	
+	        # Assemble and insert data
+	        value_data = (timestamp, x, y, z)
+	        # Create measurement value and points part of argument
+	        for y in range(len(sensors_ref)):
+	                value_data = value_data + (sensordata_list[y], sensorpts_list[y])
+	        #print(add_data)
+	        #print(value_data)
 
-        # Execute in SQL and commit to DB
-        cur.execute(add_data, value_data)
-        db.commit()
-        print("Entry added to " + target_db + " -> " + target_t + "!")
+	        # Execute in SQL and commit to DB
+	        cur.execute(add_data, value_data)
+	        db.commit()
+	        print("Entry added to " + target_db + " -> " + target_t + "!")
+	except:
+		print("Could not complete entry. Check database connection or debug SQL command.\n")
 
 def fetch_last_entry(target_db, table):
         # Point to correct database
@@ -153,8 +168,8 @@ def _make_folder(folder_name) :
                 os.makedirs(folder_name)
 
 # RUN PROGRAM
-sample_meas = (43,42,41,39)
-sample_pts = (1,2,3,5)
-add_entry("jays", "jay0", randint(0,9), randint(0,9), randint(0,9), sample_meas, sample_pts)
-fetch_all_entries("jays", "jay0")
+##sample_meas = (43,42,41,39)
+##sample_pts = (1,2,3,5)
+##add_entry("jays", "jay0", randint(0,9), randint(0,9), randint(0,9), sample_meas, sample_pts)
+##fetch_all_entries("jays", "jay0")
 
